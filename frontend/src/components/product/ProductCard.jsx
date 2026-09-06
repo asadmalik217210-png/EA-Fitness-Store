@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Heart } from 'lucide-react';
+import { Heart, ShoppingBag, Star } from 'lucide-react';
 import { money, displayPrice } from '../../utils/money';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -16,6 +16,8 @@ export default function ProductCard({ product }) {
   const { toast } = useUI();
   const price = displayPrice(product);
   const first = product.variants?.[0];
+  const category = product.category?.name || product.categorySlug?.split('-').slice(1).join(' ') || 'Training';
+  const rating = Math.round(product.ratingAvg || 0);
 
   async function quickAdd() {
     if (!first) return toast('This piece is currently unavailable');
@@ -44,20 +46,30 @@ export default function ProductCard({ product }) {
         </div>
         <div className="quick">
           <button type="button" className="btn btn-light btn-full" onClick={quickAdd}>
-            Quick add
+            <ShoppingBag size={15} /> Quick add
           </button>
         </div>
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+      <div className="product-card-info">
+        <div className="product-card-topline">
+          <span className="product-category">{category}</span>
+          <button type="button" className="nav-icon" aria-label="Wishlist" onClick={wish}>
+          <Heart size={18} fill={has(product._id) ? '#111' : 'none'} />
+          </button>
+        </div>
         <Link to={`/product/${product.slug}`}>
           <h3>{product.name}</h3>
+          <div className="product-card-rating" aria-label={`${product.ratingAvg || 0} out of 5 stars`}>
+            <span>{[0,1,2,3,4].map((star) => <Star key={star} size={12} fill={star < rating ? 'currentColor' : 'none'} />)}</span>
+            <small>{product.ratingCount ? `(${product.ratingCount})` : 'New'}</small>
+          </div>
           <div className="price">
             <span>{money(price.current)}</span>
             {price.original && <s>{money(price.original)}</s>}
           </div>
         </Link>
-        <button type="button" className="nav-icon" aria-label="Wishlist" onClick={wish} style={{ height: 28 }}>
-          <Heart size={18} fill={has(product._id) ? '#111' : 'none'} />
+        <button type="button" className="btn btn-dark product-card-add" onClick={quickAdd}>
+          <ShoppingBag size={15} /> Add to cart
         </button>
       </div>
     </article>
