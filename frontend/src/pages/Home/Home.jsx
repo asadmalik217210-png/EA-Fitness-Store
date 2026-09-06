@@ -22,6 +22,7 @@ export default function Home() {
   const [arrivals, setArrivals] = useState([]);
   const [best, setBest] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -29,9 +30,10 @@ export default function Home() {
       api('/products?bestseller=true&limit=8'),
     ])
       .then(([a, b]) => {
-        setArrivals(a.products);
-        setBest(b.products);
+        setArrivals(Array.isArray(a.products) ? a.products : []);
+        setBest(Array.isArray(b.products) ? b.products : []);
       })
+      .catch((err) => setError(err.message || 'Products are temporarily unavailable.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -78,7 +80,7 @@ export default function Home() {
             <h2>New arrivals</h2>
             <Link to="/new-arrivals">View all</Link>
           </div>
-          {loading ? <SkeletonGrid /> : (
+          {loading ? <SkeletonGrid /> : error ? <p className="muted">{error}</p> : (
             <div className="grid-products">{arrivals.map((p) => <ProductCard key={p._id} product={p} />)}</div>
           )}
         </div>
@@ -90,7 +92,7 @@ export default function Home() {
             <h2>Best sellers</h2>
             <Link to="/best-sellers">View all</Link>
           </div>
-          {loading ? <SkeletonGrid /> : (
+          {loading ? <SkeletonGrid /> : error ? <p className="muted">{error}</p> : (
             <div className="grid-products">{best.map((p) => <ProductCard key={p._id} product={p} />)}</div>
           )}
         </div>
