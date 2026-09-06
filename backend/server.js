@@ -55,15 +55,18 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use(notFound);
 app.use(errorHandler);
 
-const port = Number(process.env.PORT) || 5000;
-
-connectDb()
-  .then(() => {
-    app.listen(port, () => {
-      console.log(`EA Fitness Clothing API running on port ${port}`);
+if (require.main === module) {
+  const port = Number(process.env.PORT) || 5000;
+  connectDb()
+    .then(() => {
+      app.listen(port, () => {
+        console.log(`EA Fitness Clothing API running on port ${port}`);
+      });
+    })
+    .catch((err) => {
+      console.error('Failed to start server', err);
+      process.exit(1);
     });
-  })
-  .catch((err) => {
-    console.error('Failed to start server', err);
-    process.exit(1);
-  });
+}
+
+module.exports = { app, connectDb };
