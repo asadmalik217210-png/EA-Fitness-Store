@@ -20,6 +20,12 @@ module.exports = async function handler(req, res) {
 
   try {
     loadBackend();
+  } catch (error) {
+    console.error('Backend module load failed:', error.message);
+    return res.status(500).json({ success: false, message: 'Backend module load failed.', errorCode: error.code || null });
+  }
+
+  try {
     if (!databaseConnection) databaseConnection = connectDb();
     await databaseConnection;
     return app(req, res);
