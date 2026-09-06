@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { money } from '../../utils/money';
+import { imageUrl } from '../../utils/imageUrl';
 
 export default function CartDrawer() {
   const { cart, open, setOpen, updateQty, removeItem } = useCart();
@@ -29,7 +30,7 @@ export default function CartDrawer() {
               {!cart.items?.length && <p className="muted">Your bag is empty.</p>}
               {cart.items?.map((item) => (
                 <div key={item._id} className="cart-row" style={{ gridTemplateColumns: '72px 1fr', marginBottom: 16 }}>
-                  <img src={item.product.images?.[0]} alt="" />
+                  <img src={imageUrl(item.product.images?.[0])} alt="" />
                   <div>
                     <strong>{item.product.name}</strong>
                     <p className="muted">{item.size} / {item.color}</p>

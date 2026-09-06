@@ -29,6 +29,7 @@ export default function Shop({ title = 'Shop all', preset = {} }) {
   };
 
   useSeo({ title, description: `${title} at EA Fitness Clothing.` });
+  const activeFilterCount = Object.entries(query).filter(([key, value]) => value && !['sort', 'page'].includes(key)).length;
 
   function setFilter(key, value) {
     const next = new URLSearchParams(params);
@@ -59,9 +60,17 @@ export default function Shop({ title = 'Shop all', preset = {} }) {
   return (
     <main className="page">
       <div className="container">
-        <h1 style={{ fontSize: 52, marginBottom: 28 }}>{title}</h1>
+        <div className="collection-heading">
+          <div>
+            <p className="eyebrow">EA / COLLECTION</p>
+            <h1>{title}</h1>
+            <p className="collection-intro">Performance pieces edited for the session, the street, and everything between.</p>
+          </div>
+          <div className="collection-count"><strong>{data.pagination?.total || 0}</strong><span>pieces</span></div>
+        </div>
         <div className="shop-layout">
-          <aside className="filters">
+          <aside className="filters collection-filters">
+            <div className="filter-heading"><div><p className="eyebrow">Refine</p><h2>Find your fit</h2></div><span>{activeFilterCount ? `${activeFilterCount} active` : 'All pieces'}</span></div>
             <h3>Search</h3>
             <input className="field" style={{ minHeight: 44, padding: 10, width: '100%' }} value={query.q} onChange={(e) => setFilter('q', e.target.value)} placeholder="Search" />
             <h3>Gender</h3>
@@ -86,8 +95,8 @@ export default function Shop({ title = 'Shop all', preset = {} }) {
             <input placeholder="Max" value={query.maxPrice} onChange={(e) => setFilter('maxPrice', e.target.value)} style={{ marginTop: 8 }} />
           </aside>
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 20, gap: 12 }}>
-              <p className="muted">{data.pagination?.total || 0} pieces</p>
+            <div className="collection-toolbar">
+              <p className="muted">Showing page {query.page} of {data.pagination?.pages || 1}</p>
               <select value={query.sort} onChange={(e) => setFilter('sort', e.target.value)}>
                 <option value="newest">Newest</option>
                 <option value="price-asc">Price: low to high</option>

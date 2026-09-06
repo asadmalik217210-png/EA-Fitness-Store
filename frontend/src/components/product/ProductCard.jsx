@@ -5,6 +5,7 @@ import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useAuth } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
+import { imageUrl } from '../../utils/imageUrl';
 
 export default function ProductCard({ product }) {
   const { addItem } = useCart();
@@ -33,7 +34,7 @@ export default function ProductCard({ product }) {
     <article className="product-card">
       <div className="media">
         <Link to={`/product/${product.slug}`}>
-          <img src={product.images?.[0]} alt={product.name} loading="lazy" />
+          <img src={imageUrl(product.images?.[0])} alt={product.name} loading="lazy" />
         </Link>
         <div className="card-badges">
           {product.newArrival && <span className="badge badge-new">New</span>}

@@ -10,6 +10,7 @@ import { useWishlist } from '../../context/WishlistContext';
 import { useAuth } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
 import { useSeo } from '../../hooks/useSeo';
+import { imageUrl } from '../../utils/imageUrl';
 
 export default function Product() {
   const { slug } = useParams();
@@ -97,7 +98,7 @@ export default function Product() {
           <div className="thumbs">
             {product.images.map((src, i) => (
               <button key={src} type="button" className={img === i ? 'active' : ''} onClick={() => setImg(i)}>
-                <img src={src} alt="" />
+                <img src={imageUrl(src)} alt="" />
               </button>
             ))}
           </div>
@@ -108,7 +109,7 @@ export default function Product() {
               setZoom({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
             }}
           >
-            <img src={product.images[img]} alt={product.name} style={{ transform: 'scale(1.08)', transformOrigin: `${zoom.x}% ${zoom.y}%` }} />
+            <img src={imageUrl(product.images[img])} alt={product.name} style={{ transform: 'scale(1.08)', transformOrigin: `${zoom.x}% ${zoom.y}%` }} />
           </div>
         </div>
         <div className="product-buy-panel">
@@ -190,7 +191,7 @@ export default function Product() {
         )}
         <section className="fit-report">
           <div className="fit-report-visual">
-            <img src={product.images?.[1] || product.images?.[0]} alt={`${product.name} detail`} />
+            <img src={imageUrl(product.images?.[1] || product.images?.[0])} alt={`${product.name} detail`} />
             <span>EA / FIELD TESTED</span>
           </div>
           <div className="fit-report-copy">

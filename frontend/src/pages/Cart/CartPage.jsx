@@ -3,6 +3,7 @@ import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useAuth } from '../../context/AuthContext';
 import { money } from '../../utils/money';
+import { imageUrl } from '../../utils/imageUrl';
 import { EmptyState } from '../../components/common/States';
 import { useSeo } from '../../hooks/useSeo';
 import { useUI } from '../../context/UIContext';
@@ -26,7 +27,7 @@ export default function CartPage() {
           <h1>Bag</h1>
           {cart.items.map((item) => (
             <div className="cart-row" key={item._id}>
-              <img src={item.product.images?.[0]} alt={item.product.name} />
+              <img src={imageUrl(item.product.images?.[0])} alt={item.product.name} />
               <div>
                 <Link to={`/product/${item.product.slug}`}><strong>{item.product.name}</strong></Link>
                 <p className="muted">{item.size} / {item.color}</p>
