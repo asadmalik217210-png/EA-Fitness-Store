@@ -6,7 +6,7 @@ const { toSlug } = require('../utils/slug');
 
 function parseMultipartFields(body) {
   const parsed = { ...body };
-  for (const key of ['variants', 'tags', 'images']) {
+  for (const key of ['variants', 'tags', 'images', 'imageOrder']) {
     if (typeof parsed[key] === 'string') {
       try { parsed[key] = JSON.parse(parsed[key]); } catch {}
     }
@@ -19,6 +19,17 @@ function parseMultipartFields(body) {
     else if (parsed[key] !== undefined) parsed[key] = Number(parsed[key]);
   }
   return parsed;
+}
+
+function resolveImages(body, files) {
+  const existing = Array.isArray(body.images) ? body.images : [];
+  const uploaded = (files || []).map((file) => `/uploads/${file.filename}`);
+  if (!Array.isArray(body.imageOrder)) return [...existing, ...uploaded];
+  return body.imageOrder.map((token) => {
+    if (String(token).startsWith('existing:')) return String(token).slice(9);
+    if (String(token).startsWith('upload:')) return uploaded[Number(String(token).slice(7))];
+    return null;
+  }).filter(Boolean);
 }
 
 function buildFilter(query) {
@@ -126,7 +137,7 @@ exports.createProduct = asyncHandler(async (req, res) => {
   const body = parseMultipartFields(req.body);
   body.slug = body.slug || toSlug(body.name);
   body.onSale = Boolean(body.salePrice && body.salePrice < body.price);
-  if (req.files?.length) body.images = req.files.map((f) => `/uploads/${f.filename}`);
+  body.images = resolveImages(body, req.files);
   const product = await Product.create(body);
   res.status(201).json({ success: true, product });
 });
@@ -137,14 +148,7 @@ exports.updateProduct = asyncHandler(async (req, res) => {
   if (body.price || body.salePrice) {
     body.onSale = Boolean(body.salePrice && body.salePrice < (body.price ?? 0));
   }
-  if (req.files?.length) {
-    const existingImages = Array.isArray(body.images)
-      ? body.images
-      : body.images
-        ? [body.images]
-        : [];
-    body.images = [...existingImages, ...req.files.map((f) => `/uploads/${f.filename}`)];
-  }
+  body.images = resolveImages(body, req.files);
   const product = await Product.findByIdAndUpdate(req.params.id, body, { new: true, runValidators: true });
   if (!product) throw new AppError('Product not found', 404);
   res.json({ success: true, product });

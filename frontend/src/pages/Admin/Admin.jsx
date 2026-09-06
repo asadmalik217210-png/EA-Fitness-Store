@@ -134,8 +134,8 @@ export function AdminProductForm() {
     material: '', careInstructions: '', tags: 'training', featured: false, bestseller: false, newArrival: false, isActive: true,
     images: [], variants: [{ size: 'M', color: 'Onyx', colorHex: '#111111', sku: '', stock: 12 }],
   });
-  const [imageFiles, setImageFiles] = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
+  const [gallery, setGallery] = useState([]);
+  const [draggedImage, setDraggedImage] = useState(null);
 
   useEffect(() => {
     api('/products/categories').then((d) => setCats(d.categories || []));
@@ -143,18 +143,45 @@ export function AdminProductForm() {
       api(`/admin/products/${id}`).then((d) => {
         const p = d.product;
         setForm({ ...p, salePrice: p.salePrice || '', tags: (p.tags || []).join(',') });
+        setGallery((p.images || []).map((src) => ({ kind: 'existing', src })));
       });
     }
   }, [id]);
 
-  useEffect(() => () => imagePreviews.forEach((preview) => URL.revokeObjectURL(preview)), [imagePreviews]);
-
   function set(k, v) { setForm((f) => ({ ...f, [k]: v })); }
 
   function removeSelectedImage(index) {
-    URL.revokeObjectURL(imagePreviews[index]);
-    setImageFiles((files) => files.filter((_, itemIndex) => itemIndex !== index));
-    setImagePreviews((previews) => previews.filter((_, itemIndex) => itemIndex !== index));
+    setGallery((items) => {
+      const item = items[index];
+      if (item?.kind === 'upload') URL.revokeObjectURL(item.src);
+      return items.filter((_, itemIndex) => itemIndex !== index);
+    });
+  }
+
+  function moveImage(from, to) {
+    if (from === to || from === null || to === null) return;
+    setGallery((items) => {
+      const next = [...items];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      return next;
+    });
+  }
+
+  function selectImages(event) {
+    addImageFiles(Array.from(event.target.files || []));
+    event.target.value = '';
+  }
+
+  function addImageFiles(files) {
+    const remaining = Math.max(0, 5 - gallery.length);
+    const next = files.filter((file) => file.type.startsWith('image/')).slice(0, remaining).map((file) => ({ kind: 'upload', file, src: URL.createObjectURL(file) }));
+    setGallery((items) => [...items, ...next]);
+  }
+
+  function dropImages(event) {
+    event.preventDefault();
+    addImageFiles(Array.from(event.dataTransfer.files || []));
   }
 
   async function onSubmit(e) {
@@ -172,7 +199,11 @@ export function AdminProductForm() {
       Object.entries(body).forEach(([key, value]) => {
         if (value !== undefined) formData.append(key, Array.isArray(value) ? JSON.stringify(value) : String(value));
       });
-      imageFiles.forEach((file) => formData.append('images', file));
+      const uploadItems = gallery.filter((item) => item.kind === 'upload');
+      formData.append('imageOrder', JSON.stringify(gallery.map((item) => (
+        item.kind === 'existing' ? `existing:${item.src}` : `upload:${uploadItems.indexOf(item)}`
+      ))));
+      uploadItems.forEach((item) => formData.append('images', item.file));
       if (id && id !== 'new') await api(`/admin/products/${id}`, { method: 'PATCH', formData });
       else await api('/admin/products', { method: 'POST', formData });
       toast('Product saved successfully');
@@ -198,18 +229,31 @@ export function AdminProductForm() {
       </div>
       <div className="field">
         <label>Product images from desktop</label>
-        <input type="file" accept="image/*" multiple onChange={(e) => {
-          const files = Array.from(e.target.files || []);
-          setImageFiles(files);
-          setImagePreviews(files.map((file) => URL.createObjectURL(file)));
-        }} />
-        {imageFiles.length > 0 && <small>{imageFiles.length} image(s) selected</small>}
-        {(form.images?.length > 0 || imagePreviews.length > 0) && <div className="admin-image-previews">
-          {(form.images || []).map((src, index) => <div className={`admin-image-preview ${index === 0 ? 'is-main' : ''}`} key={src}><div className="admin-image-label">{index === 0 ? 'Main image' : 'Gallery image'}</div><img src={src} alt={`${form.name || 'Product'} image ${index + 1}`} /><button type="button" onClick={() => set('images', form.images.filter((_, itemIndex) => itemIndex !== index))}>Remove</button><small>Saved</small></div>)}
-          {imagePreviews.map((preview, index) => <div className={`admin-image-preview ${index === 0 && !form.images?.length ? 'is-main' : ''}`} key={preview}><div className="admin-image-label">{index === 0 && !form.images?.length ? 'Main image' : 'Gallery image'}</div><img src={preview} alt={`Selected product ${index + 1}`} /><button type="button" onClick={() => removeSelectedImage(index)}>Remove</button><small>New upload</small></div>)}
+        <div className="admin-image-dropzone" onDragOver={(event) => event.preventDefault()} onDrop={dropImages}>
+          <input id="product-images" type="file" accept="image/*" multiple onChange={selectImages} />
+          <label htmlFor="product-images"><b>Choose up to 5 images</b><span>or drag images here</span></label>
+        </div>
+        <small>{gallery.length}/5 images · First image is shown as the main product image.</small>
+        {gallery.length > 0 && <div className="admin-image-previews">
+          {gallery.map((item, index) => (
+            <div
+              className={`admin-image-preview ${index === 0 ? 'is-main' : ''}`}
+              key={item.src}
+              draggable
+              onDragStart={() => setDraggedImage(index)}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={() => { moveImage(draggedImage, index); setDraggedImage(null); }}
+            >
+              <div className="admin-image-label">{index === 0 ? 'Main image' : `Thumbnail ${index}`}</div>
+              <img src={item.src} alt={`${form.name || 'Product'} image ${index + 1}`} />
+              {index !== 0 && <button type="button" onClick={() => moveImage(index, 0)}>Make main</button>}
+              <button type="button" onClick={() => removeSelectedImage(index)}>Remove</button>
+              <small>{item.kind === 'existing' ? 'Saved' : 'New upload'} · Drag to reorder</small>
+            </div>
+          ))}
         </div>}
       </div>
-      <div className="field"><label>Image URLs (optional)</label><input value={(form.images || []).join(',')} onChange={(e) => set('images', e.target.value.split(',').map((s) => s.trim()))} /></div>
+      <div className="field"><label>Image URLs (optional)</label><input value={(form.images || []).join(',')} onChange={(e) => { const images = e.target.value.split(',').map((s) => s.trim()).filter(Boolean); set('images', images); setGallery((items) => [...images.map((src) => ({ kind: 'existing', src })), ...items.filter((item) => item.kind === 'upload')].slice(0, 5)); }} /></div>
       <label><input type="checkbox" checked={form.featured} onChange={(e) => set('featured', e.target.checked)} /> Featured</label>
       <label><input type="checkbox" checked={form.bestseller} onChange={(e) => set('bestseller', e.target.checked)} /> Bestseller</label>
       <label><input type="checkbox" checked={form.newArrival} onChange={(e) => set('newArrival', e.target.checked)} /> New arrival</label>
@@ -297,8 +341,20 @@ export function AdminOrders() {
         {['Pending','Confirmed','Processing','Packed','Shipped','Delivered','Cancelled','Returned'].map((s) => <option key={s}>{s}</option>)}
       </select>
       <table>
-        <thead><tr><th>Order</th><th>Email</th><th>Status</th><th>Total</th></tr></thead>
-        <tbody>{orders.map((o) => <tr key={o._id}><td><Link to={`/admin/orders/${o._id}`}>{o.orderNumber}</Link></td><td>{o.email}</td><td>{o.status}</td><td>{money(o.total)}</td></tr>)}</tbody>
+        <thead><tr><th>Order</th><th>Customer</th><th>Contact</th><th>Address</th><th>Status</th><th>Total</th></tr></thead>
+        <tbody>{orders.map((o) => {
+          const address = o.shippingAddress || {};
+          return (
+            <tr key={o._id}>
+              <td><Link to={`/admin/orders/${o._id}`}>{o.orderNumber}</Link></td>
+              <td>{address.firstName} {address.lastName}</td>
+              <td>{o.email || address.email}<br />{address.phone || 'No phone'}</td>
+              <td>{address.line1}, {address.city}, {address.state} {address.postalCode}, {address.country}</td>
+              <td>{o.status}</td>
+              <td>{money(o.total)}</td>
+            </tr>
+          );
+        })}</tbody>
       </table>
     </div>
   );
@@ -321,6 +377,26 @@ export function AdminOrderDetail() {
       <select value={order.status} onChange={(e) => patch({ status: e.target.value })}>
         {['Pending','Confirmed','Processing','Packed','Shipped','Delivered','Cancelled','Returned'].map((s) => <option key={s}>{s}</option>)}
       </select>
+      <section className="admin-detail-section">
+        <h2>Customer details</h2>
+        <p><b>Name:</b> {order.shippingAddress?.firstName} {order.shippingAddress?.lastName}</p>
+        <p><b>Email:</b> {order.email || order.shippingAddress?.email || 'Not provided'}</p>
+        <p><b>Phone:</b> {order.shippingAddress?.phone || 'Not provided'}</p>
+        <p><b>Address:</b> {order.shippingAddress?.line1}, {order.shippingAddress?.city}, {order.shippingAddress?.state} {order.shippingAddress?.postalCode}, {order.shippingAddress?.country}</p>
+      </section>
+      <section className="admin-detail-section">
+        <h2>Order details</h2>
+        <p><b>Shipping:</b> {order.shippingMethod?.name || 'Standard'} ({order.shippingMethod?.eta || 'N/A'})</p>
+        <p><b>Payment:</b> {order.payment?.method || 'N/A'} · {order.payment?.status || 'pending'}</p>
+        <p><b>Total:</b> {money(order.total)}</p>
+        <ul>
+          {(order.items || []).map((item) => (
+            <li key={`${item.sku}-${item.size}-${item.color}`}>
+              {item.name} · {item.size} · {item.color} × {item.quantity} · {money(item.price)}
+            </li>
+          ))}
+        </ul>
+      </section>
       <div className="field"><label>Tracking</label><input defaultValue={order.trackingNumber} onBlur={(e) => patch({ trackingNumber: e.target.value, carrier: 'EA Logistics' })} /></div>
       <button type="button" className="btn btn-outline" onClick={() => patch({ refund: true })}>Mark refunded</button>
       {order.returnRequest?.requested && (

@@ -1,5 +1,6 @@
 const GUEST_KEY = 'ea_guest_id';
 const TOKEN_KEY = 'ea_token';
+const API_BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
 
 export function getGuestId() {
   let id = localStorage.getItem(GUEST_KEY);
@@ -35,7 +36,7 @@ export async function api(path, { method = 'GET', body, formData, headers } = {}
     opts.headers['Content-Type'] = 'application/json';
     opts.body = JSON.stringify(body);
   }
-  const res = await fetch(`/api${path}`, opts);
+  const res = await fetch(`${API_BASE}${path}`, opts);
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     if (res.status === 401) {
