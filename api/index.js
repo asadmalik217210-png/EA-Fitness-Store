@@ -26,9 +26,20 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     databaseConnection = null;
     console.error('Database connection failed:', error.message);
+    const message = String(error.message || 'Database connection failed');
+    const reason = /authentication failed|bad auth|auth/i.test(message)
+      ? 'mongodb-authentication'
+      : /ENOTFOUND|querySrv|DNS/i.test(message)
+        ? 'mongodb-dns'
+        : /timeout|timed out|ETIMEDOUT/i.test(message)
+          ? 'mongodb-timeout'
+          : /TLS|SSL|certificate/i.test(message)
+            ? 'mongodb-tls'
+            : 'mongodb-connection';
     return res.status(503).json({
       success: false,
-      message: 'Database connection unavailable. Check MONGODB_URI and MongoDB Atlas network access.',
+      message: 'Database connection unavailable.',
+      reason,
     });
   }
 };
