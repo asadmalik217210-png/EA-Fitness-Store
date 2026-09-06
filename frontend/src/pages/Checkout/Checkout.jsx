@@ -67,8 +67,8 @@ export default function Checkout() {
 
   return (
     <main className="page">
-      <div className="container" style={{ display: 'grid', gridTemplateColumns: '1.2fr .8fr', gap: 32 }}>
-        <div>
+      <div className="container checkout-layout">
+        <div className="checkout-main">
           <div className="steps">{STEPS.map((s, i) => <span key={s} className={`step ${i === step ? 'active' : ''}`}>{i + 1}. {s}</span>)}</div>
           {step === 0 && (
             <div>
@@ -84,7 +84,7 @@ export default function Checkout() {
           {step === 1 && (
             <div>
               {methods.map((m) => (
-                <label key={m.id} style={{ display: 'block', padding: 12, border: '1px solid #eee', marginBottom: 8 }}>
+                <label className="checkout-option" key={m.id}>
                   <input type="radio" checked={form.shippingMethodId === m.id} onChange={() => set('shippingMethodId', m.id)} /> {m.name} — {money(m.price)} · {m.eta}
                 </label>
               ))}
@@ -95,7 +95,7 @@ export default function Checkout() {
             <div>
               <p className="muted">Card details are handled securely on the server. This checkout uses a configurable mock gateway until live keys are added.</p>
               {['card', 'cod'].map((m) => (
-                <label key={m} style={{ display: 'block', padding: 12, border: '1px solid #eee', marginBottom: 8 }}>
+                <label className="checkout-option" key={m}>
                   <input type="radio" checked={form.paymentMethod === m} onChange={() => set('paymentMethod', m)} /> {m === 'card' ? 'Card (secure mock)' : 'Cash on delivery'}
                 </label>
               ))}
@@ -113,10 +113,10 @@ export default function Checkout() {
           {cart.items?.map((i) => (
             <div key={i._id} className="summary-line"><span>{i.product.name} × {i.quantity}</span><span>{money(i.lineTotal)}</span></div>
           ))}
-          <div className="field" style={{ marginTop: 12 }}>
+          <div className="field checkout-coupon">
             <label>Coupon</label>
             <input value={coupon} onChange={(e) => setCoupon(e.target.value)} placeholder="TRAIN10" />
-            <button type="button" className="btn btn-outline" style={{ marginTop: 8 }} onClick={applyCoupon}>Apply</button>
+            <button type="button" className="btn btn-outline" onClick={applyCoupon}>Apply</button>
           </div>
           <div className="summary-line"><span>Subtotal</span><span>{money(cart.subtotal)}</span></div>
           <div className="summary-line"><span>Discount</span><span>-{money(discount)}</span></div>
