@@ -82,6 +82,7 @@ export default function Shop({ title = 'Shop all', preset = {} }) {
           <div className="collection-count"><strong>{data.pagination?.total || 0}</strong><span>pieces</span></div>
         </div>
         <div className="shop-layout">
+          {filtersOpen && <button type="button" className="filter-backdrop" aria-label="Close filters" onClick={() => setFiltersOpen(false)} />}
           <aside className={`filters collection-filters ${filtersOpen ? 'is-open' : ''}`}>
             <div className="filter-heading"><div><p className="eyebrow">Refine</p><h2>Find your fit</h2></div><button type="button" className="filter-close" onClick={() => setFiltersOpen(false)}>Close</button><span>{activeFilterCount ? `${activeFilterCount} active` : 'All pieces'}</span></div>
             <h3>Search</h3>
