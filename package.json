@@ -1,0 +1,9 @@
+{
+  "name": "ea-fitness-clothing-store",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "seed": "npm run seed --prefix backend"
+  }
+}
