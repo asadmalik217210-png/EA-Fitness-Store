@@ -23,7 +23,10 @@ function parseMultipartFields(body) {
 
 function resolveImages(body, files) {
   const existing = Array.isArray(body.images) ? body.images : [];
-  const uploaded = (files || []).map((file) => `/uploads/${file.filename}`);
+  const uploaded = (files || []).map((file) => {
+    const content = fs.readFileSync(file.path).toString('base64');
+    return `data:${file.mimetype};base64,${content}`;
+  });
   if (!Array.isArray(body.imageOrder)) return [...existing, ...uploaded];
   return body.imageOrder.map((token) => {
     if (String(token).startsWith('existing:')) return String(token).slice(9);
