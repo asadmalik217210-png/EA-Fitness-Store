@@ -11,6 +11,7 @@ export default function Shop({ title = 'Shop all', preset = {} }) {
   const [cats, setCats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const query = {
     q: params.get('q') || '',
@@ -39,6 +40,11 @@ export default function Shop({ title = 'Shop all', preset = {} }) {
     setParams(next);
   }
 
+  function clearFilters() {
+    setParams(new URLSearchParams());
+    setFiltersOpen(false);
+  }
+
   useEffect(() => {
     api('/products/categories').then((d) => setCats(d.categories || []));
   }, []);
@@ -60,6 +66,13 @@ export default function Shop({ title = 'Shop all', preset = {} }) {
   return (
     <main className="page">
       <div className="container">
+        <div className="collection-hero">
+          <div className="collection-hero-copy">
+            <p className="eyebrow">EA / TRAINING EDIT</p>
+            <h1>Built for the work</h1>
+            <p>Premium training apparel with a fashion-grade finish.</p>
+          </div>
+        </div>
         <div className="collection-heading">
           <div>
             <p className="eyebrow">EA / COLLECTION</p>
@@ -69,8 +82,8 @@ export default function Shop({ title = 'Shop all', preset = {} }) {
           <div className="collection-count"><strong>{data.pagination?.total || 0}</strong><span>pieces</span></div>
         </div>
         <div className="shop-layout">
-          <aside className="filters collection-filters">
-            <div className="filter-heading"><div><p className="eyebrow">Refine</p><h2>Find your fit</h2></div><span>{activeFilterCount ? `${activeFilterCount} active` : 'All pieces'}</span></div>
+          <aside className={`filters collection-filters ${filtersOpen ? 'is-open' : ''}`}>
+            <div className="filter-heading"><div><p className="eyebrow">Refine</p><h2>Find your fit</h2></div><button type="button" className="filter-close" onClick={() => setFiltersOpen(false)}>Close</button><span>{activeFilterCount ? `${activeFilterCount} active` : 'All pieces'}</span></div>
             <h3>Search</h3>
             <input className="field" style={{ minHeight: 44, padding: 10, width: '100%' }} value={query.q} onChange={(e) => setFilter('q', e.target.value)} placeholder="Search" />
             <h3>Gender</h3>
@@ -93,10 +106,12 @@ export default function Shop({ title = 'Shop all', preset = {} }) {
             <h3>Price</h3>
             <input placeholder="Min" value={query.minPrice} onChange={(e) => setFilter('minPrice', e.target.value)} />
             <input placeholder="Max" value={query.maxPrice} onChange={(e) => setFilter('maxPrice', e.target.value)} style={{ marginTop: 8 }} />
+            <button type="button" className="btn btn-outline filter-reset" onClick={clearFilters}>Clear all filters</button>
           </aside>
           <div>
             <div className="collection-toolbar">
-              <p className="muted">Showing page {query.page} of {data.pagination?.pages || 1}</p>
+              <button type="button" className="btn btn-outline filter-toggle" onClick={() => setFiltersOpen(true)}>Filters{activeFilterCount ? ` (${activeFilterCount})` : ''}</button>
+              <p className="muted">{data.pagination?.total || 0} pieces</p>
               <select value={query.sort} onChange={(e) => setFilter('sort', e.target.value)}>
                 <option value="newest">Newest</option>
                 <option value="price-asc">Price: low to high</option>
