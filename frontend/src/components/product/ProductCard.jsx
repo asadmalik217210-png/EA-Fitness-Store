@@ -7,6 +7,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useUI } from '../../context/UIContext';
 import { imageUrl } from '../../utils/imageUrl';
 
+const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80';
+
 export default function ProductCard({ product }) {
   const { addItem } = useCart();
   const { has, toggle } = useWishlist();
@@ -34,7 +36,7 @@ export default function ProductCard({ product }) {
     <article className="product-card">
       <div className="media">
         <Link to={`/product/${product.slug}`}>
-          <img src={imageUrl(product.images?.[0])} alt={product.name} loading="lazy" />
+          <img src={imageUrl(product.images?.[0])} alt={product.name} loading="lazy" onError={(event) => { event.currentTarget.onerror = null; event.currentTarget.src = FALLBACK_IMAGE; }} />
         </Link>
         <div className="card-badges">
           {product.newArrival && <span className="badge badge-new">New</span>}
