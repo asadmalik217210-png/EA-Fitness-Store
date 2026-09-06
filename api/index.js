@@ -40,6 +40,8 @@ module.exports = async function handler(req, res) {
       success: false,
       message: 'Database connection unavailable.',
       reason,
+      errorName: error.name || 'Error',
+      errorCode: error.code || null,
     });
   }
 };
