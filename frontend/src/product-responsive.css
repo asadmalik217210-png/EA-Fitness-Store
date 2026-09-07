@@ -32,13 +32,15 @@
 .product-hero-grid { max-width: 1380px; }
 .product-buy-panel { min-width: 0; }
 .product-main-image { border: 1px solid var(--line); background: #f1f1ef; }
+.product-gallery .product-main-image { width: 500px; height: 500px; min-height: 0; }
 .product-main-image img { object-fit: contain; }
 .product-buy-panel .product-intro { font-size: 14px; }
 .product-actions { position: relative; }
+.product-rating-stars,.review-score-stars{display:inline-flex;align-items:center;gap:2px;color:#b77918}.upsell-heading{display:flex;justify-content:space-between;align-items:end;gap:20px;margin:70px 0 22px;border-bottom:1px solid var(--line);padding-bottom:16px}.upsell-heading h2{font-size:clamp(30px,4vw,48px);margin-top:6px}.upsell-heading>span{color:var(--gray);font-size:12px}.cart-upsell{margin-top:70px}
 
 @media (max-width: 1024px) {
   .product-hero-grid { grid-template-columns: minmax(0, 1fr) minmax(300px, .8fr); gap: 28px; }
-  .product-gallery .product-main-image { width: 100%; height: auto; aspect-ratio: 1 / 1; }
+  .product-gallery .product-main-image { width: min(100%, 340px); height: 340px; aspect-ratio: 1 / 1; margin-inline: auto; }
 }
 
 @media (max-width: 768px) {
@@ -58,6 +60,7 @@
   .product-tabs button { flex: 0 0 auto; }
   .product-benefits-grid { grid-template-columns: 1fr; gap: 18px; }
   .fit-report, .session-edit { margin-top: 48px; }
+  .upsell-heading{align-items:start;flex-direction:column;gap:8px;margin-top:48px}.cart-upsell{margin-top:48px}
 }
 
 @media (max-width: 420px) {

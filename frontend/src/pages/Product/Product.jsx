@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Heart, ShieldCheck, Truck, RefreshCcw, Ruler, Zap } from 'lucide-react';
+import { Heart, ShieldCheck, Truck, RefreshCcw, Ruler, Zap, Star } from 'lucide-react';
 import { api } from '../../services/api';
 import { money, displayPrice } from '../../utils/money';
 import ProductCard from '../../components/product/ProductCard';
@@ -124,7 +124,7 @@ export default function Product() {
             <span>{money(price.current)}</span>
             {price.original && <s>{money(price.original)}</s>}
           </div>
-          <div className="product-rating"><span>{'★'.repeat(Math.round(product.ratingAvg || 0))}{'☆'.repeat(5 - Math.round(product.ratingAvg || 0))}</span> <b>{product.ratingAvg || 'New'}</b> <a href="#reviews">{product.ratingCount || 0} reviews</a></div>
+          <div className="product-rating"><span className="product-rating-stars">{[0,1,2,3,4].map((star) => <Star key={star} size={15} fill={star < Math.round(product.ratingAvg || 0) ? 'currentColor' : 'none'} />)}</span> <b>{product.ratingAvg || 'New'}</b> <a href="#reviews">{product.ratingCount || 0} reviews</a></div>
           <p className="product-intro">{product.description}</p>
           <div className={`stock-note ${variant?.stock > 0 ? '' : 'is-out'}`}><span className="stock-dot" />{variant?.stock > 0 ? `${variant.stock} available in this size` : 'This variant is out of stock'}</div>
           <h3 className="choice-label">Color <span>{color}</span></h3>
@@ -173,7 +173,7 @@ export default function Product() {
         </div>
       </section>
       <div id="reviews" className="container product-lower-content">
-        <div className="reviews-heading"><div><p className="eyebrow">The community</p><h2>Reviews</h2></div><span className="review-score">{product.ratingAvg || '—'} <small>/ 5</small></span></div>
+        <div className="reviews-heading"><div><p className="eyebrow">The community</p><h2>Reviews</h2></div><span className="review-score"><span className="review-score-stars">{[0,1,2,3,4].map((star) => <Star key={star} size={16} fill={star < Math.round(product.ratingAvg || 0) ? 'currentColor' : 'none'} />)}</span> {product.ratingAvg || '—'} <small>/ 5</small></span></div>
         {reviews.map((r) => (
           <div key={r._id} style={{ padding: '16px 0', borderBottom: '1px solid #eee' }}>
             <strong>{r.user?.firstName} {r.user?.lastName}</strong> · {r.rating}/5
@@ -219,7 +219,7 @@ export default function Product() {
             <div><span>03</span><strong>After hours</strong><p>A clean silhouette that earns its place outside the gym.</p></div>
           </div>
         </section>
-        <h2 style={{ marginTop: 48 }}>Related</h2>
+        <div className="upsell-heading"><div><p className="eyebrow">Complete the set</p><h2>Pairs well with</h2></div><span>Curated for your next session</span></div>
         <div className="grid-products">{related.map((p) => <ProductCard key={p._id} product={p} />)}</div>
         {viewed.length > 0 && (
           <>

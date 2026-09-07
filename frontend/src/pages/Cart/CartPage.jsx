@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
 import { useAuth } from '../../context/AuthContext';
@@ -7,6 +8,8 @@ import { imageUrl } from '../../utils/imageUrl';
 import { EmptyState } from '../../components/common/States';
 import { useSeo } from '../../hooks/useSeo';
 import { useUI } from '../../context/UIContext';
+import { api } from '../../services/api';
+import ProductCard from '../../components/product/ProductCard';
 
 export default function CartPage() {
   useSeo({ title: 'Cart' });
@@ -14,7 +17,12 @@ export default function CartPage() {
   const { toggle } = useWishlist();
   const { user } = useAuth();
   const { toast } = useUI();
+  const [upsell, setUpsell] = useState([]);
   const shipping = cart.subtotal >= 100 ? 0 : 8;
+
+  useEffect(() => {
+    api('/products?sort=popularity&limit=4').then((data) => setUpsell(data.products || [])).catch(() => {});
+  }, []);
 
   if (!cart.items?.length) {
     return <EmptyState title="Your bag is empty" text="Start with a training essential." action={<Link className="btn btn-dark" to="/shop">Continue shopping</Link>} />;
@@ -56,6 +64,7 @@ export default function CartPage() {
           <Link className="btn btn-outline btn-full" style={{ marginTop: 8 }} to="/shop">Continue shopping</Link>
         </aside>
       </div>
+      {upsell.length > 0 && <section className="cart-upsell container"><div className="upsell-heading"><div><p className="eyebrow">Complete the set</p><h2>You may also like</h2></div><span>Easy additions to your rotation</span></div><div className="grid-products">{upsell.map((product) => <ProductCard key={product._id} product={product} />)}</div></section>}
     </main>
   );
 }
