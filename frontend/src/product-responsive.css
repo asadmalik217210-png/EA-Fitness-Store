@@ -28,6 +28,46 @@
   .product-gallery .product-main-image { width:100%; height:auto; aspect-ratio:1/1; }
 }
 
+/* Product detail layout across phones and tablets */
+.product-hero-grid { max-width: 1380px; }
+.product-buy-panel { min-width: 0; }
+.product-main-image { border: 1px solid var(--line); background: #f1f1ef; }
+.product-main-image img { object-fit: contain; }
+.product-buy-panel .product-intro { font-size: 14px; }
+.product-actions { position: relative; }
+
+@media (max-width: 1024px) {
+  .product-hero-grid { grid-template-columns: minmax(0, 1fr) minmax(300px, .8fr); gap: 28px; }
+  .product-gallery .product-main-image { width: 100%; height: auto; aspect-ratio: 1 / 1; }
+}
+
+@media (max-width: 768px) {
+  .product-hero-grid { display: flex; flex-direction: column; gap: 24px; padding-top: 8px; }
+  .product-gallery { width: 100%; }
+  .product-gallery .gallery { display: flex; flex-direction: column; gap: 10px; }
+  .product-gallery .main-img { order: 1; width: 100%; aspect-ratio: 1 / 1; min-height: 0; }
+  .product-gallery .thumbs { order: 2; display: flex; flex-direction: row; width: 100%; overflow-x: auto; gap: 8px; padding: 2px 0 6px; }
+  .product-gallery .thumbs button { flex: 0 0 68px; width: 68px; height: 82px; }
+  .product-buy-panel { width: 100%; padding-bottom: 88px; }
+  .product-title-row h1 { font-size: clamp(38px, 12vw, 56px); max-width: 10ch; }
+  .product-kicker { font-size: 9px; }
+  .product-intro { font-size: 13px; line-height: 1.65; }
+  .product-trust-row { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .product-trust-row span { font-size: 9px; }
+  .product-tabs { overflow-x: auto; white-space: nowrap; }
+  .product-tabs button { flex: 0 0 auto; }
+  .product-benefits-grid { grid-template-columns: 1fr; gap: 18px; }
+  .fit-report, .session-edit { margin-top: 48px; }
+}
+
+@media (max-width: 420px) {
+  .product-actions { grid-template-columns: 1fr; gap: 8px; }
+  .product-actions .btn-outline { display: inline-flex; }
+  .product-trust-row span { font-size: 8px; }
+  .product-title-row h1 { font-size: 42px; }
+  .product-heart { width: 40px; height: 40px; }
+}
+
 .fit-report {
   display: grid;
   grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
